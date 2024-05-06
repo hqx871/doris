@@ -206,6 +206,7 @@ public class FunctionSet<T> {
     public static final String HISTOGRAM = "histogram";
     public static final String HIST = "hist";
     public static final String MAP_AGG = "map_agg";
+    public static final String AGG_ARRAY_COLLECT_SET = "agg_array_collect_set";
 
     public static final String BITMAP_AGG = "bitmap_agg";
     public static final String COUNT_BY_ENUM = "count_by_enum";
@@ -1467,6 +1468,8 @@ public class FunctionSet<T> {
                     "", "", "", "", "", true, false, true, true));
             addBuiltin(AggregateFunction.createBuiltin(COLLECT_SET, Lists.newArrayList(t), new ArrayType(t), t,
                     "", "", "", "", "", true, false, true, true));
+            addBuiltin(AggregateFunction.createBuiltin(AGG_ARRAY_COLLECT_SET, Lists.newArrayList(new ArrayType(t)), new ArrayType(t), new ArrayType(t),
+                                                       "", "", "", "", "", true, false, true, true));
             addBuiltin(AggregateFunction.createBuiltin(COLLECT_LIST, Lists.newArrayList(t, Type.INT), new ArrayType(t), t,
                     "", "", "", "", "", true, false, true, true));
             addBuiltin(AggregateFunction.createBuiltin(COLLECT_SET, Lists.newArrayList(t, Type.INT), new ArrayType(t), t,
@@ -1922,6 +1925,14 @@ public class FunctionSet<T> {
 
     public Map<String, List<Function>> getVectorizedFunctions() {
         return ImmutableMap.copyOf(vectorizedFunctions);
+    }
+
+    public List<Function> getVectorizedFunctions(String name) {
+        return vectorizedFunctions.getOrDefault(name, Collections.emptyList());
+    }
+
+    public List<Function> getFunctions(String name) {
+        return functions.getOrDefault(name, Collections.emptyList());
     }
 
     public List<Function> getBulitinFunctions() {

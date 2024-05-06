@@ -22,6 +22,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <type_traits>
 
+#include "vec/aggregate_functions/aggregate_function_array.h"
 #include "vec/aggregate_functions/aggregate_function_simple_factory.h"
 #include "vec/aggregate_functions/helpers.h"
 
@@ -112,5 +113,6 @@ void register_aggregate_function_collect_list(AggregateFunctionSimpleFactory& fa
     factory.register_function_both("array_agg", create_aggregate_function_collect);
     factory.register_alias("collect_list", "group_array");
     factory.register_alias("collect_set", "group_uniq_array");
+    register_aggregate_function_array(factory, "agg_array_collect_set", "collect_set");
 }
 } // namespace doris::vectorized

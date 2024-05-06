@@ -32,6 +32,7 @@ import org.apache.doris.common.util.SqlParserUtils;
 import org.apache.doris.qe.SqlModeHelper;
 import org.apache.doris.thrift.TFunctionBinaryType;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -95,6 +96,33 @@ public class AliasFunction extends Function {
 
         } catch (AnalysisException e) {
             LOG.error("Add builtin alias function error {}", e);
+        }
+
+        try {
+            initSimpleAliasFunction(functionSet, "arrays_overlap_any", "arrays_overlap");
+            initSimpleAliasFunction(functionSet, "groupUniqArray", "collect_set");
+            initSimpleAliasFunction(functionSet, "groupUniqArrayArray", "agg_array_collect_set");
+        } catch (AnalysisException e) {
+            // To avoid ut fail, just print error
+            LOG.error("Add builtin alias function error", e);
+        }
+    }
+
+    private static void initSimpleAliasFunction(FunctionSet<?> functionSet, String alias, String target)
+            throws AnalysisException {
+        List<Function> oriFuncs = new ArrayList<>();
+        oriFuncs.addAll(functionSet.getVectorizedFunctions(target));
+        oriFuncs.addAll(functionSet.getFunctions(target));
+        for (Function oriFunc : oriFuncs) {
+            ArrayList<Type> args = new ArrayList<>(Arrays.asList(oriFunc.getArgs()));
+            List<String> parameters = new ArrayList<>();
+            for (int i = 0; i < args.size(); i++) {
+                parameters.add("arg" + i);
+            }
+            String oriStmt = String.format("select %s(%s);", target, Joiner.on(",").join(parameters));
+            functionSet.addBuiltin(
+                    createBuiltin(alias, args, oriFunc.getReturnType(), oriFunc.hasVarArgs(), parameters,
+                            getExpr(oriStmt), oriFunc.isUserVisible(), oriFunc.isVectorized()));
         }
     }
 

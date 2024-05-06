@@ -87,6 +87,41 @@ public:
     }
 
     template <typename DataType>
+    void agg_collect_array_add_elements(AggregateFunctionPtr agg_function, AggregateDataPtr place,
+                                        size_t input_nums) {
+        //fill array column: [[0..input_nums-1],[]]
+        using FieldType = typename DataType::FieldType;
+        auto off_column = vectorized::ColumnVector<vectorized::ColumnArray::Offset64>::create();
+        auto total_num = input_nums * _repeated_times;
+        std::vector<vectorized::ColumnArray::Offset64> offs = {0, total_num, total_num};
+        for (size_t i = 1; i < offs.size(); ++i) {
+            off_column->insert_data((const char*)(&offs[i]), 0);
+        }
+        auto type = std::make_shared<DataType>();
+        auto data_column = type->create_column();
+        for (size_t i = 0; i < input_nums; ++i) {
+            for (size_t j = 0; j < _repeated_times; ++j) {
+                if constexpr (std::is_same_v<DataType, DataTypeString>) {
+                    auto item = std::string("item") + std::to_string(i);
+                    data_column->insert_data(item.c_str(), item.size());
+                } else {
+                    auto item = FieldType(static_cast<uint64_t>(i));
+                    data_column->insert_data(reinterpret_cast<const char*>(&item), 0);
+                }
+            }
+        }
+        EXPECT_EQ(data_column->size(), total_num);
+        auto column_array_ptr =
+                vectorized::ColumnArray::create(std::move(data_column), std::move(off_column));
+
+        const IColumn* column[1] = {column_array_ptr.get()};
+        EXPECT_EQ(column_array_ptr->get_offsets().size(), offs.size() - 1);
+        for (size_t i = 0; i < column_array_ptr->get_offsets().size(); ++i) {
+            agg_function->add(place, column, i, &_agg_arena_pool);
+        }
+    }
+
+    template <typename DataType>
     void test_agg_collect(const std::string& fn_name, size_t input_nums = 0) {
         DataTypes data_types = {(DataTypePtr)std::make_shared<DataType>()};
         LOG(INFO) << "test_agg_collect for " << fn_name << "(" << data_types[0]->get_name() << ")";
@@ -130,6 +165,52 @@ public:
         agg_function->destroy(place2);
     }
 
+    template <typename DataType>
+    void test_agg_collect_array_set(size_t input_nums = 0) {
+        const std::string fn_name {"agg_array_collect_set"};
+        vectorized::DataTypePtr nested_type(std::make_shared<DataType>());
+        vectorized::DataTypePtr array_type(std::make_shared<vectorized::DataTypeArray>(nested_type));
+        DataTypes data_types = {(DataTypePtr)array_type};
+        LOG(INFO) << "test " << fn_name << "(" << data_types[0]->get_name() << ")";
+        Array array;
+        AggregateFunctionSimpleFactory factory = AggregateFunctionSimpleFactory::instance();
+        auto agg_function = factory.get(fn_name, data_types, array);
+        EXPECT_NE(agg_function, nullptr);
+
+        std::unique_ptr<char[]> memory(new char[agg_function->size_of_data()]);
+        AggregateDataPtr place = memory.get();
+        agg_function->create(place);
+
+        agg_collect_array_add_elements<DataType>(agg_function, place, input_nums);
+
+        ColumnString buf;
+        VectorBufferWriter buf_writer(buf);
+        agg_function->serialize(place, buf_writer);
+        buf_writer.commit();
+        VectorBufferReader buf_reader(buf.get_data_at(0));
+        agg_function->deserialize(place, buf_reader, &_agg_arena_pool);
+
+        std::unique_ptr<char[]> memory2(new char[agg_function->size_of_data()]);
+        AggregateDataPtr place2 = memory2.get();
+        agg_function->create(place2);
+
+        agg_collect_array_add_elements<DataType>(agg_function, place2, input_nums);
+
+        agg_function->merge(place, place2, &_agg_arena_pool);
+        auto column_result = ColumnArray::create(nested_type->create_column());
+        agg_function->insert_result_into(place, *column_result);
+        EXPECT_EQ(column_result->size(), 1);
+        EXPECT_EQ(column_result->get_offsets()[0], input_nums);
+
+        auto column_result2 = ColumnArray::create(nested_type->create_column());
+        agg_function->insert_result_into(place2, *column_result2);
+        EXPECT_EQ(column_result2->size(), 1);
+        EXPECT_EQ(column_result2->get_offsets()[0], input_nums);
+
+        agg_function->destroy(place);
+        agg_function->destroy(place2);
+    }
+
 private:
     const size_t _repeated_times = 2;
     vectorized::Arena _agg_arena_pool;
@@ -157,6 +238,18 @@ TEST_F(VAggCollectTest, test_empty) {
     test_agg_collect<DataTypeString>("collect_set");
 }
 
+TEST_F(VAggCollectTest, test_array_empty) {
+    test_agg_collect_array_set<DataTypeInt8>();
+    test_agg_collect_array_set<DataTypeInt16>();
+    test_agg_collect_array_set<DataTypeInt32>();
+    test_agg_collect_array_set<DataTypeInt64>();
+    test_agg_collect_array_set<DataTypeInt128>();
+
+    test_agg_collect_array_set<DataTypeDecimal<Decimal128>>();
+    test_agg_collect_array_set<DataTypeDate>();
+    test_agg_collect_array_set<DataTypeString>();
+}
+
 TEST_F(VAggCollectTest, test_with_data) {
     test_agg_collect<DataTypeInt32>("collect_list", 7);
     test_agg_collect<DataTypeInt32>("collect_set", 9);
@@ -171,6 +264,17 @@ TEST_F(VAggCollectTest, test_with_data) {
 
     test_agg_collect<DataTypeString>("collect_list", 10);
     test_agg_collect<DataTypeString>("collect_set", 5);
+}
+
+TEST_F(VAggCollectTest, test_array_with_data) {
+    test_agg_collect_array_set<DataTypeInt32>(7);
+    test_agg_collect_array_set<DataTypeInt64>(9);
+    test_agg_collect_array_set<DataTypeInt128>(20);
+    test_agg_collect_array_set<DataTypeInt128>(30);
+
+    test_agg_collect_array_set<DataTypeDecimal<Decimal128>>(10);
+    test_agg_collect_array_set<DataTypeDateTime>(5);
+    test_agg_collect_array_set<DataTypeString>(10);
 }
 
 } // namespace doris::vectorized
