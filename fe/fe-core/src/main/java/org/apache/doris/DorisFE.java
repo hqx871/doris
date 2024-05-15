@@ -70,6 +70,7 @@ public class DorisFE {
 
     public static final String DORIS_HOME_DIR = System.getenv("DORIS_HOME");
     public static final String PID_DIR = System.getenv("PID_DIR");
+    public static final String CLUSTER = System.getenv("DORIS_CLUSTER");
 
 
     private static String LOCK_FILE_PATH;
@@ -92,11 +93,12 @@ public class DorisFE {
         StartupOptions options = new StartupOptions();
         options.enableHttpServer = true;
         options.enableQeService = true;
-        start(DORIS_HOME_DIR, PID_DIR, args, options);
+        start(DORIS_HOME_DIR, PID_DIR, CLUSTER, args, options);
     }
 
     // entrance for doris frontend
-    public static void start(String dorisHomeDir, String pidDir, String[] args, StartupOptions options) {
+    public static void start(String dorisHomeDir, String pidDir, String dorisClusterName,
+                             String[] args, StartupOptions options) {
         if (System.getenv("DORIS_LOG_TO_STDERR") != null) {
             Log4jConfig.foreground = true;
         }
@@ -107,6 +109,11 @@ public class DorisFE {
 
         if (Strings.isNullOrEmpty(pidDir)) {
             System.err.println("env PID_DIR is not set.");
+            return;
+        }
+
+        if (dorisClusterName == null) {
+            System.err.println("env DORIS_CLUSTER is not set.");
             return;
         }
 
@@ -125,10 +132,10 @@ public class DorisFE {
 
             // init config
             Config config = new Config();
-            config.init(dorisHomeDir + "/conf/fe.conf");
+            config.init(dorisHomeDir  + "/conf/" + dorisClusterName + "/fe.conf");
             // Must init custom config after init config, separately.
             // Because the path of custom config file is defined in fe.conf
-            config.initCustom(Config.custom_config_dir + "/fe_custom.conf");
+            config.initCustom(Config.custom_config_dir + "/" + dorisClusterName + "/fe_custom.conf");
             LOCK_FILE_PATH = Config.meta_dir + "/" + LOCK_FILE_NAME;
             try {
                 tryLockProcess();
@@ -137,7 +144,7 @@ public class DorisFE {
                 System.exit(-1);
             }
             LdapConfig ldapConfig = new LdapConfig();
-            if (new File(dorisHomeDir + "/conf/ldap.conf").exists()) {
+            if (new File(dorisHomeDir + "/conf/" + dorisClusterName + "/ldap.conf").exists()) {
                 ldapConfig.init(dorisHomeDir + "/conf/ldap.conf");
             }
 
@@ -146,7 +153,7 @@ public class DorisFE {
                 throw new IllegalArgumentException("Java version doesn't match");
             }
 
-            Log4jConfig.initLogging(dorisHomeDir + "/conf/");
+            Log4jConfig.initLogging(dorisHomeDir + "/conf/" + dorisClusterName);
             Runtime.getRuntime().addShutdownHook(new Thread(LogManager::shutdown));
 
             // set dns cache ttl
