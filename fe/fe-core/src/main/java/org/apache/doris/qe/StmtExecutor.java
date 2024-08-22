@@ -2699,9 +2699,12 @@ public class StmtExecutor {
 
     public void handleExplainStmt(String result, boolean isNereids) throws IOException {
         ShowResultSetMetaData metaData = ShowResultSetMetaData.builder()
-                .addColumn(new Column("Explain String" + (isNereids ? "(Nereids Planner)" : "(Old Planner)"),
+                .addColumn(new Column(
+                        // "Explain String" + (isNereids ? "(Nereids Planner)" : "(Old Planner)"
+                        "Explain String",
                         ScalarType.createVarchar(20)))
                 .build();
+        result = "Planner: " + (isNereids ? "Nereids Planner" : "Old Planner") + "\n" + result;
         if (context.getConnectType() == ConnectType.MYSQL) {
             sendMetaData(metaData);
 
