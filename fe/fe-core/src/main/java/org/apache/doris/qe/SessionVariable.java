@@ -140,6 +140,8 @@ public class SessionVariable implements Serializable, Writable {
 
     public static final String ENABLE_FOLD_CONSTANT_BY_BE = "enable_fold_constant_by_be";
 
+    public static final String ENABLE_AI_FUNCTIONS_FOLD_CONSTANT = "enable_ai_functions_fold_constant";
+
     public static final String ENABLE_REWRITE_ELEMENT_AT_TO_SLOT = "enable_rewrite_element_at_to_slot";
     public static final String ENABLE_ODBC_TRANSCATION = "enable_odbc_transcation";
     public static final String ENABLE_SQL_CACHE = "enable_sql_cache";
@@ -1026,6 +1028,9 @@ public class SessionVariable implements Serializable, Writable {
 
     @VariableMgr.VarAttr(name = ENABLE_FOLD_CONSTANT_BY_BE, fuzzy = true)
     public boolean enableFoldConstantByBe = false;
+
+    @VariableMgr.VarAttr(name = ENABLE_AI_FUNCTIONS_FOLD_CONSTANT)
+    public boolean enableAIFunctionsFoldConstant = true;
 
     @VariableMgr.VarAttr(name = ENABLE_REWRITE_ELEMENT_AT_TO_SLOT, fuzzy = true)
     private boolean enableRewriteElementAtToSlot = true;
@@ -4029,5 +4034,13 @@ public class SessionVariable implements Serializable, Writable {
             default:
                 throw new IllegalArgumentException("Unknown serde dialect: " + serdeDialect);
         }
+    }
+
+    public boolean isEnableAIFunctionsFoldConstant() {
+        return enableAIFunctionsFoldConstant;
+    }
+
+    public void setEnableAIFunctionsFoldConstant(boolean enableAIFunctionsFoldConstant) {
+        this.enableAIFunctionsFoldConstant = enableAIFunctionsFoldConstant;
     }
 }

@@ -556,6 +556,7 @@ struct TMasterOpRequest {
     // transaction load
     29: optional TTxnLoadInfo txnLoadInfo
     30: optional TGroupCommitInfo groupCommitInfo
+    31: optional bool AIFunctionsFoldByBe
 }
 
 struct TColumnDefinition {

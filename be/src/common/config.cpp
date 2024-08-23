@@ -1269,6 +1269,13 @@ DEFINE_mBool(enable_parquet_page_index, "true");
 
 DEFINE_mBool(ignore_not_found_file_in_external_table, "true");
 
+/**
+ * Configures the API key for DataMind TCC service with a higher priority
+ * if explicitly set. Falls back to decrypting the key from `datamind-tcc.key`
+ * generated at build time in `output/fe/` or `output/be/`.
+ */
+DEFINE_mString(datamind_tcc_api_key, "");
+
 // clang-format off
 #ifdef BE_TEST
 // test s3

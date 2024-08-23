@@ -1332,8 +1332,11 @@ public class StmtExecutor {
             }
             ExprRewriter rewriter = analyzer.getExprRewriter();
             rewriter.reset();
-            if (context.getSessionVariable().isEnableFoldConstantByBe()) {
+            boolean enableAIFunctionsFoldConstant = context.getSessionVariable().isEnableAIFunctionsFoldConstant();
+            if (context.getSessionVariable().isEnableFoldConstantByBe()
+                    || enableAIFunctionsFoldConstant) {
                 // fold constant expr
+                rewriter.setOnlyFoldAIFunctions(enableAIFunctionsFoldConstant);
                 parsedStmt.foldConstant(rewriter, tQueryOptions);
             }
             if (context.getSessionVariable().isEnableRewriteElementAtToSlot()) {
