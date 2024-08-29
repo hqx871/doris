@@ -255,6 +255,10 @@ public class NativeInsertStmt extends InsertStmt {
         return tblName.getDb();
     }
 
+    public String getTableName() {
+        return tblName.getTbl();
+    }
+
     public String getTbl() {
         return tblName.getTbl();
     }
