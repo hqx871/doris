@@ -193,11 +193,11 @@ public abstract class ConnectProcessor {
     }
 
     protected void auditAfterExec(String origStmt, StatementBase parsedStmt,
-            Data.PQueryStatistics statistics, boolean printFuzzyVariables) {
+            Data.PQueryStatistics statistics, boolean printFuzzyVariables, String logId) {
         if (Config.enable_bdbje_debug_mode) {
             return;
         }
-        AuditLogHelper.logAuditLog(ctx, origStmt, parsedStmt, statistics, printFuzzyVariables);
+        AuditLogHelper.logAuditLog(ctx, origStmt, parsedStmt, statistics, printFuzzyVariables, logId);
     }
 
     // only throw an exception when there is a problem interacting with the requesting client
@@ -302,6 +302,7 @@ public abstract class ConnectProcessor {
         long parseSqlFinishTime = System.currentTimeMillis();
 
         boolean usingOrigSingleStmt = origSingleStmtList != null && origSingleStmtList.size() == stmts.size();
+        String logId = null;
         for (int i = 0; i < stmts.size(); ++i) {
             String auditStmt = usingOrigSingleStmt ? origSingleStmtList.get(i) : convertedStmt;
             try {
@@ -326,6 +327,9 @@ public abstract class ConnectProcessor {
 
                 try {
                     executor.execute();
+                    if (logId == null) {
+                        logId = executor.getLogId();
+                    }
                     if (connectType.equals(ConnectType.MYSQL)) {
                         if (i != stmts.size() - 1) {
                             ctx.getState().serverStatus |= MysqlServerStatusFlag.SERVER_MORE_RESULTS_EXISTS;
@@ -354,7 +358,7 @@ public abstract class ConnectProcessor {
                         }
                     }
                     auditAfterExec(auditStmt, executor.getParsedStmt(), executor.getQueryStatisticsForAuditLog(),
-                            true);
+                            true, logId);
                     // execute failed, skip remaining stmts
                     if (ctx.getState().getStateType() == MysqlStateType.ERR) {
                         break;
@@ -472,7 +476,7 @@ public abstract class ConnectProcessor {
                 ctx.getState().setErrType(QueryState.ErrType.ANALYSIS_ERR);
             }
         }
-        auditAfterExec(origStmt, parsedStmt, statistics, true);
+        auditAfterExec(origStmt, parsedStmt, statistics, true, null);
     }
 
     // analyze the origin stmt and return multi-statements

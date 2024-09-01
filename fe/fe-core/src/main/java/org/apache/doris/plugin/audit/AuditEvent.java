@@ -105,6 +105,8 @@ public class AuditEvent {
     // note: newly added fields should be always before fuzzyVariables
     @AuditField(value = "FuzzyVariables")
     public String fuzzyVariables = "";
+    @AuditField(value = "LogId")
+    public String logId = "";
 
     public long pushToAuditLogQueueTime;
 
@@ -241,6 +243,11 @@ public class AuditEvent {
 
         public AuditEventBuilder setWorkloadGroup(String workloadGroup) {
             auditEvent.workloadGroup = workloadGroup;
+            return this;
+        }
+
+        public AuditEventBuilder setLogId(String logId) {
+            auditEvent.logId = logId;
             return this;
         }
 
