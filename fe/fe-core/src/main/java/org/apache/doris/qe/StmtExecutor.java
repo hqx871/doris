@@ -1048,7 +1048,7 @@ public class StmtExecutor {
             optHints = setOperationStmt.collectHints();
         }
 
-        if (!optHints.isEmpty()) {
+        if (optHints != null && !optHints.isEmpty()) {
             sessionVariable.setIsSingleSetVar(true);
             for (String key : optHints.keySet()) {
                 if (key.equals("log_id")) {
