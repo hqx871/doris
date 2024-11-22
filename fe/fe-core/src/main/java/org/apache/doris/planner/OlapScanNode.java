@@ -751,8 +751,10 @@ public class OlapScanNode extends ScanNode {
         boolean needCheckTags = false;
         boolean skipMissingVersion = false;
         if (ConnectContext.get() != null) {
-            allowedTags = ConnectContext.get().getResourceTags();
-            needCheckTags = ConnectContext.get().isResourceTagsSet();
+            if (ConnectContext.get().getGdprIdentity() == null) {
+                allowedTags = ConnectContext.get().getResourceTags();
+                needCheckTags = ConnectContext.get().isResourceTagsSet();
+            }
             useFixReplica = ConnectContext.get().getSessionVariable().useFixReplica;
             // if use_fix_replica is set to true, set skip_missing_version to false
             skipMissingVersion = useFixReplica == -1 && ConnectContext.get().getSessionVariable().skipMissingVersion;

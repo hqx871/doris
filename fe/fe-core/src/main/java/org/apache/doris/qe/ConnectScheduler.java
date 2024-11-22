@@ -18,6 +18,7 @@
 package org.apache.doris.qe;
 
 import org.apache.doris.catalog.Env;
+import org.apache.doris.common.Config;
 import org.apache.doris.common.ThreadPoolManager;
 import org.apache.doris.common.util.DebugUtil;
 import org.apache.doris.mysql.privilege.PrivPredicate;
@@ -93,6 +94,13 @@ public class ConnectScheduler {
         if (numberConnection.incrementAndGet() > maxConnections) {
             numberConnection.decrementAndGet();
             return false;
+        }
+        // TODO(weihongkai.me): specify user or psm in gdpr token in order to control max_user_connections
+        if (Config.enable_gdpr) {
+            if (ctx.getGdprIdentity() != null) {
+                connectionMap.put(ctx.getConnectionId(), ctx);
+                return true;
+            }
         }
         // Check user
         connByUser.putIfAbsent(ctx.getQualifiedUser(), new AtomicInteger(0));

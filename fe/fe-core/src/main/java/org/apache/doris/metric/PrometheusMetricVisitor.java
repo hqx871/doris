@@ -41,12 +41,20 @@ import java.util.stream.Collectors;
  * doris_fe_job{job="load", type="mini", state="pending"} 0
  */
 public class PrometheusMetricVisitor extends MetricVisitor {
+    // doris fe metrics prefix
+    private static final String DORIS_FE_PREFIX = "doris_fe_";
+
     // jvm
-    private static final String JVM_HEAP_SIZE_BYTES = "jvm_heap_size_bytes";
-    private static final String JVM_NON_HEAP_SIZE_BYTES = "jvm_non_heap_size_bytes";
-    private static final String JVM_YOUNG_SIZE_BYTES = "jvm_young_size_bytes";
-    private static final String JVM_OLD_SIZE_BYTES = "jvm_old_size_bytes";
-    private static final String JVM_THREAD = "jvm_thread";
+
+    private static final String JVM_HEAP_SIZE_BYTES = DORIS_FE_PREFIX + "jvm_heap_size_bytes";
+    private static final String JVM_NON_HEAP_SIZE_BYTES = DORIS_FE_PREFIX + "jvm_non_heap_size_bytes";
+    private static final String JVM_YOUNG_SIZE_BYTES = DORIS_FE_PREFIX + "jvm_young_size_bytes";
+    private static final String JVM_OLD_SIZE_BYTES = DORIS_FE_PREFIX + "jvm_old_size_bytes";
+    private static final String JVM_DIRECT_BUFFER_POOL_SIZE_BYTES = DORIS_FE_PREFIX
+            + "jvm_direct_buffer_pool_size_bytes";
+    private static final String JVM_YOUNG_GC = DORIS_FE_PREFIX + "jvm_young_gc";
+    private static final String JVM_OLD_GC = DORIS_FE_PREFIX + "jvm_old_gc";
+    private static final String JVM_THREAD = DORIS_FE_PREFIX + "jvm_thread";
 
     private static final String JVM_GC = "jvm_gc";
 
@@ -205,7 +213,7 @@ public class PrometheusMetricVisitor extends MetricVisitor {
 
     @Override
     public void getNodeInfo() {
-        final String NODE_INFO = "node_info";
+        final String NODE_INFO = DORIS_FE_PREFIX + "node_info";
         sb.append(Joiner.on(" ").join(TYPE, NODE_INFO, "gauge\n"));
         sb.append(NODE_INFO).append("{type=\"fe_node_num\", state=\"total\"} ")
                 .append(Env.getCurrentEnv().getFrontends(null).size()).append("\n");

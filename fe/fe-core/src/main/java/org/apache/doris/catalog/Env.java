@@ -250,6 +250,7 @@ import org.apache.doris.scheduler.manager.TransientTaskManager;
 import org.apache.doris.scheduler.registry.ExportTaskRegister;
 import org.apache.doris.service.ExecuteEnv;
 import org.apache.doris.service.FrontendOptions;
+import org.apache.doris.service.GdprService;
 import org.apache.doris.statistics.AnalysisManager;
 import org.apache.doris.statistics.StatisticsAutoCollector;
 import org.apache.doris.statistics.StatisticsCache;
@@ -547,6 +548,8 @@ public class Env {
 
     private final SplitSourceManager splitSourceManager;
 
+    private GdprService gdprService;
+
     public List<TFrontendInfo> getFrontendInfos() {
         List<TFrontendInfo> res = new ArrayList<>();
 
@@ -786,6 +789,7 @@ public class Env {
         this.dnsCache = new DNSCache();
         this.sqlCacheManager = new NereidsSqlCacheManager();
         this.splitSourceManager = new SplitSourceManager();
+        this.gdprService = new GdprService();
     }
 
     public static void destroyCheckpoint() {
@@ -6326,6 +6330,10 @@ public class Env {
         } catch (Exception e) {
             throw new TException(e);
         }
+    }
+
+    public GdprService getGdprService() {
+        return gdprService;
     }
 }
 

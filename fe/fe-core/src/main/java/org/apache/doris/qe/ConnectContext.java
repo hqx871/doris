@@ -73,6 +73,7 @@ import com.google.common.collect.Sets;
 import io.netty.util.concurrent.FastThreadLocal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.byted.security.common.LegacyIdentity;
 import org.json.JSONObject;
 import org.xnio.StreamConnection;
 
@@ -308,6 +309,10 @@ public class ConnectContext {
     public InsertResult getInsertResult() {
         return insertResult;
     }
+
+    protected String gdprToken = "";
+
+    protected LegacyIdentity gdprIdentity = null;
 
     public static ConnectContext get() {
         return threadLocalInfo.get();
@@ -1110,6 +1115,23 @@ public class ConnectContext {
     public void setStatsErrorEstimator(StatsErrorEstimator statsErrorEstimator) {
         this.statsErrorEstimator = statsErrorEstimator;
     }
+
+    public LegacyIdentity getGdprIdentity() {
+        return gdprIdentity;
+    }
+
+    public void setGdprIdentity(LegacyIdentity gdprIdentity) {
+        this.gdprIdentity = gdprIdentity;
+    }
+
+    public String getGdprToken() {
+        return gdprToken;
+    }
+
+    public void setGdprToken(String gdprToken) {
+        this.gdprToken = gdprToken;
+    }
+
 
     public void setWorkloadGroupName(String workloadGroupName) {
         this.workloadGroupName = workloadGroupName;

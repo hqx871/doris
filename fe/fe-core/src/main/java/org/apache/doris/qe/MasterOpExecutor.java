@@ -21,12 +21,14 @@ import org.apache.doris.analysis.LiteralExpr;
 import org.apache.doris.analysis.RedirectStatus;
 import org.apache.doris.catalog.Env;
 import org.apache.doris.common.ClientPool;
+import org.apache.doris.common.Config;
 import org.apache.doris.common.DdlException;
 import org.apache.doris.common.ErrorCode;
 import org.apache.doris.thrift.FrontendService;
 import org.apache.doris.thrift.TExpr;
 import org.apache.doris.thrift.TExprNode;
 import org.apache.doris.thrift.TGroupCommitInfo;
+import org.apache.doris.thrift.TIdentity;
 import org.apache.doris.thrift.TMasterOpRequest;
 import org.apache.doris.thrift.TMasterOpResult;
 import org.apache.doris.thrift.TNetworkAddress;
@@ -38,11 +40,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
+import org.byted.security.common.LegacyIdentity;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 
 public class MasterOpExecutor {
     private static final Logger LOG = LogManager.getLogger(MasterOpExecutor.class);
@@ -174,6 +178,8 @@ public class MasterOpExecutor {
         params.setUserIp(ctx.getRemoteIP());
         params.setStmtId(ctx.getStmtId());
         params.setCurrentUserIdent(ctx.getCurrentUserIdentity().toThrift());
+        params.setGdprIdentity(buildTIdentity(ctx.getGdprIdentity()));
+        params.setGdprToken(ctx.getGdprToken());
 
         // query options
         params.setQueryOptions(ctx.getSessionVariable().getQueryOptionVariables());
@@ -329,5 +335,23 @@ public class MasterOpExecutor {
             forwardVariables.put(entry.getKey(), tExprNode);
         }
         return forwardVariables;
+    }
+
+    private TIdentity buildTIdentity(LegacyIdentity identity) {
+        TIdentity tIdentity = null;
+        if (Config.enable_gdpr) {
+            if (identity != null) {
+                tIdentity = new TIdentity();
+                tIdentity.setUser(identity.User);
+                tIdentity.setPsm(identity.PSM);
+                tIdentity.setAuthority(identity.Authority);
+                tIdentity.setAuthorityChain(identity.AuthorityChain);
+                tIdentity.setExpireTime(identity.ExpireTime);
+                tIdentity.setPrimaryAuthType(identity.PrimaryAuthType);
+                tIdentity.setVersion(identity.Version);
+            }
+        }
+
+        return tIdentity;
     }
 }

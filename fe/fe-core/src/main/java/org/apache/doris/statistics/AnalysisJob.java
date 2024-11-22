@@ -158,7 +158,7 @@ public class AnalysisJob {
         } finally {
             AuditLogHelper.logAuditLog(stmtExecutor.getContext(), stmtExecutor.getOriginStmt().toString(),
                     stmtExecutor.getParsedStmt(), stmtExecutor.getQueryStatisticsForAuditLog(),
-                    true, stmtExecutor.getLogId());
+                    true);
         }
     }
 

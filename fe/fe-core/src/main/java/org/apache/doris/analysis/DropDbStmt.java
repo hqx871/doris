@@ -78,7 +78,7 @@ public class DropDbStmt extends DdlStmt {
         if (!Env.getCurrentEnv().getAccessManager()
                 .checkDbPriv(ConnectContext.get(),
                         StringUtils.isEmpty(ctlName) ? InternalCatalog.INTERNAL_CATALOG_NAME : ctlName, dbName,
-                        PrivPredicate.DROP)) {
+                        PrivPredicate.DROP, true)) {
             ErrorReport.reportAnalysisException(ErrorCode.ERR_DBACCESS_DENIED_ERROR,
                     ConnectContext.get().getQualifiedUser(), dbName);
         }
