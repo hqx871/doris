@@ -2650,6 +2650,9 @@ public class Config extends ConfigBase {
     public static boolean enable_proxy_protocol = false;
     public static int profile_async_collect_expire_time_secs = 5;
 
+    @ConfField(mutable = true)
+    public static boolean use_old_version_explain_result_format = true;
+
     /*---------------------- GDPR CONFIG START ------------------------*/
     @ConfField(description = {
         "gdpr 账户缓存池大小",

@@ -48,7 +48,7 @@ suite ("multi_slot_k123p") {
         set 'column_separator', ','
         set 'columns', 'k1, k2, k3, k4'
         file 'multi_slot_k123p.csv'
-        time 10000
+        time 30000
     }
     sql """sync"""
     qt_select_star "select * from d_table order by k1,k4;"

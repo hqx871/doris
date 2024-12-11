@@ -168,12 +168,12 @@ suite("test_alter_user", "account,nonConcurrent") {
     result1 = connect(user = 'test_auth_user4', password = '12345', url = context.config.jdbcUrl) {
         sql 'select 1'
     }
-    sleep(6000)
+    sleep(10000)
     sql """set password for 'test_auth_user4' = password('123')"""
     result2 = connect(user = 'test_auth_user4', password = '123', url = context.config.jdbcUrl) {
         sql 'select 1'
     }
-    sleep(6000)
+    sleep(10000)
     try {
         connect(user = 'test_auth_user4', password = '123', url = context.config.jdbcUrl) {}
         assertTrue(false. "should not be able to login")

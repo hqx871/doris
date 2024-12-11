@@ -49,15 +49,7 @@ suite("test_single_replica_compaction_with_format_v2", "inverted_index_format_v2
     def calc_segment_count = { tablet -> 
         int segment_count = 0
         String tablet_id = tablet.TabletId
-        StringBuilder sb = new StringBuilder();
-        sb.append("curl -X GET ")
-        sb.append(tablet.CompactionStatus)
-        String command = sb.toString()
-        // wait for cleaning stale_rowsets
-        def process = command.execute()
-        def code = process.waitFor()
-        def err = IOGroovyMethods.getText(new BufferedReader(new InputStreamReader(process.getErrorStream())));
-        def out = process.getText()
+        def (code, out, err) = curl("GET", tablet.CompactionStatus)
         logger.info("Show tablets status: code=" + code + ", out=" + out + ", err=" + err)
         assertEquals(code, 0)
         def tabletJson = parseJson(out.trim())
@@ -76,17 +68,7 @@ suite("test_single_replica_compaction_with_format_v2", "inverted_index_format_v2
         getBackendIpHttpPort(backendId_to_backendIP, backendId_to_backendHttpPort);
 
         backend_id = backendId_to_backendIP.keySet()[0]
-        StringBuilder showConfigCommand = new StringBuilder();
-        showConfigCommand.append("curl -X GET http://")
-        showConfigCommand.append(backendId_to_backendIP.get(backend_id))
-        showConfigCommand.append(":")
-        showConfigCommand.append(backendId_to_backendHttpPort.get(backend_id))
-        showConfigCommand.append("/api/show_config")
-        logger.info(showConfigCommand.toString())
-        def process = showConfigCommand.toString().execute()
-        int code = process.waitFor()
-        String err = IOGroovyMethods.getText(new BufferedReader(new InputStreamReader(process.getErrorStream())));
-        String out = process.getText()
+        def (code, out, err) = show_be_config(backendId_to_backendIP.get(backend_id), backendId_to_backendHttpPort.get(backend_id))
         logger.info("Show config: code=" + code + ", out=" + out + ", err=" + err)
         assertEquals(code, 0)
         def configList = parseJson(out.trim())
@@ -172,21 +154,7 @@ suite("test_single_replica_compaction_with_format_v2", "inverted_index_format_v2
             String ip = backendId_to_backendIP.get(backend_id)
             String port = backendId_to_backendHttpPort.get(backend_id)
             check_nested_index_file(ip, port, tablet_id, 9, 3, "V2")
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("curl -X POST http://")
-            sb.append(backendId_to_backendIP.get(backend_id))
-            sb.append(":")
-            sb.append(backendId_to_backendHttpPort.get(backend_id))
-            sb.append("/api/compaction/run?tablet_id=")
-            sb.append(tablet_id)
-            sb.append("&compact_type=cumulative")
-
-            String command = sb.toString()
-            process = command.execute()
-            code = process.waitFor()
-            err = IOGroovyMethods.getText(new BufferedReader(new InputStreamReader(process.getErrorStream())));
-            out = process.getText()
+            (code, out, err) = be_run_cumulative_compaction(backendId_to_backendIP.get(backend_id), backendId_to_backendHttpPort.get(backend_id), tablet_id)
             logger.info("Run compaction: code=" + code + ", out=" + out + ", err=" + err)
             assertEquals(code, 0)
             def compactJson = parseJson(out.trim())
@@ -206,20 +174,7 @@ suite("test_single_replica_compaction_with_format_v2", "inverted_index_format_v2
             backend_id = tablet.BackendId
             do {
                 Thread.sleep(1000)
-                StringBuilder sb = new StringBuilder();
-                sb.append("curl -X GET http://")
-                sb.append(backendId_to_backendIP.get(backend_id))
-                sb.append(":")
-                sb.append(backendId_to_backendHttpPort.get(backend_id))
-                sb.append("/api/compaction/run_status?tablet_id=")
-                sb.append(tablet_id)
-
-                String command = sb.toString()
-                logger.info(command)
-                process = command.execute()
-                code = process.waitFor()
-                err = IOGroovyMethods.getText(new BufferedReader(new InputStreamReader(process.getErrorStream())));
-                out = process.getText()
+                (code, out, err) = be_get_compaction_status(backendId_to_backendIP.get(backend_id), backendId_to_backendHttpPort.get(backend_id), tablet_id)
                 logger.info("Get compaction status: code=" + code + ", out=" + out + ", err=" + err)
                 assertEquals(code, 0)
                 def compactionStatus = parseJson(out.trim())

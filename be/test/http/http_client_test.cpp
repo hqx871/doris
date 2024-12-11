@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <iostream>
 
 #include "gtest/gtest_pred_impl.h"
 #include "http/ev_http_server.h"
@@ -42,6 +43,7 @@ public:
     void handle(HttpRequest* req) override {
         std::string user;
         std::string passwd;
+        std::cout << req->debug_string()<< std::endl;
         if (!parse_basic_auth(*req, &user, &passwd) || user != "test1") {
             HttpChannel::send_basic_challenge(req, "abc");
             return;
@@ -123,6 +125,7 @@ public:
         real_port = s_server->get_real_port();
         EXPECT_NE(0, real_port);
         hostname = "http://127.0.0.1:" + std::to_string(real_port);
+        std::cout << "hostname=" << hostname << std::endl;
     }
 
     static void TearDownTestCase() { delete s_server; }
