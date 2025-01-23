@@ -508,6 +508,12 @@ BASE64_NAME="v0.5.2.tar.gz"
 BASE64_SOURCE="base64-0.5.2"
 BASE64_MD5SUM="49e5a6c98bd0192aedd16c16eec39974"
 
+# hdfs_client
+HDFS_CLIENT_DOWNLOAD="https://code.byted.org/inf/native_dfs_client.git"
+HDFS_CLIENT_NAME="hdfs-client-1.2.51.tar.gz"
+HDFS_CLIENT_SOURCE="hdfs-client-1.2.51"
+HDFS_CLIENT_MD5SUM="4f2fd6b2a319c6368fa3241442060677"
+
 # all thirdparties which need to be downloaded is set in array TP_ARCHIVES
 export TP_ARCHIVES=(
     'LIBEVENT'
@@ -583,6 +589,7 @@ export TP_ARCHIVES=(
     'LIBUUID'
     'ALI_SDK'
     'BASE64'
+    'HDFS_CLIENT'
 )
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then

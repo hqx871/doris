@@ -109,7 +109,9 @@ Status create_hdfs_builder(const THdfsParams& hdfsParams, const std::string& fs_
     if (hdfsParams.__isset.hdfs_kerberos_principal) {
         builder->kerberos_login = true;
         builder->hdfs_kerberos_principal = hdfsParams.hdfs_kerberos_principal;
+#ifdef USE_HADOOP_HDFS
         hdfsBuilderSetPrincipal(builder->get(), hdfsParams.hdfs_kerberos_principal.c_str());
+#endif
     } else if (hdfsParams.__isset.user) {
         hdfsBuilderSetUserName(builder->get(), hdfsParams.user.c_str());
 #ifdef USE_HADOOP_HDFS
@@ -120,8 +122,12 @@ Status create_hdfs_builder(const THdfsParams& hdfsParams, const std::string& fs_
     // set other conf
     if (hdfsParams.__isset.hdfs_conf) {
         for (const THdfsConf& conf : hdfsParams.hdfs_conf) {
-            hdfsBuilderConfSetStr(builder->get(), conf.key.c_str(), conf.value.c_str());
-            LOG(INFO) << "set hdfs config: " << conf.key << ", value: " << conf.value;
+            if (conf.key == "token") {
+                hdfsBuilderConfSetStr(builder->get(), "ipc.client.custom_token", conf.value.c_str());
+            } else {
+                hdfsBuilderConfSetStr(builder->get(), conf.key.c_str(), conf.value.c_str());
+            }
+            VLOG_ROW << "set hdfs config: " << conf.key << ", value: " << conf.value;
 #ifdef USE_HADOOP_HDFS
             // Set krb5.conf, we should define java.security.krb5.conf in catalog properties
             if (strcmp(conf.key.c_str(), "java.security.krb5.conf") == 0) {

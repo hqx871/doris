@@ -186,7 +186,7 @@ export DORIS_CLASSPATH="-Djava.class.path=${DORIS_CLASSPATH}"
 
 # log ${DORIS_CLASSPATH}
 
-export LD_LIBRARY_PATH="${DORIS_HOME}/lib/hadoop_hdfs/native:${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="${DORIS_HOME}/lib/hadoop_hdfs/native:${LD_LIBRARY_PATH}:${DORIS_HOME}/lib"
 
 while read -r line; do
     envline="$(echo "${line}" |
