@@ -45,16 +45,16 @@ public class AuditLogHelper {
     // log may write to a doris internal table, we may meet errors. We do not want this affect the
     // query process. Ignore this error and just write warning log.
     public static void logAuditLog(ConnectContext ctx, String origStmt, StatementBase parsedStmt,
-            org.apache.doris.proto.Data.PQueryStatistics statistics, boolean printFuzzyVariables) {
+            org.apache.doris.proto.Data.PQueryStatistics statistics, boolean printFuzzyVariables, String logId) {
         try {
-            logAuditLogImpl(ctx, origStmt, parsedStmt, statistics, printFuzzyVariables);
+            logAuditLogImpl(ctx, origStmt, parsedStmt, statistics, printFuzzyVariables, logId);
         } catch (Throwable t) {
             LOG.warn("Failed to write audit log.", t);
         }
     }
 
     private static void logAuditLogImpl(ConnectContext ctx, String origStmt, StatementBase parsedStmt,
-            org.apache.doris.proto.Data.PQueryStatistics statistics, boolean printFuzzyVariables) {
+            org.apache.doris.proto.Data.PQueryStatistics statistics, boolean printFuzzyVariables, String logId) {
         origStmt = origStmt.replace("\n", " ");
         // slow query
         long endTime = System.currentTimeMillis();
@@ -86,7 +86,7 @@ public class AuditLogHelper {
                 .setWorkloadGroup(ctx.getWorkloadGroupName())
                 .setFuzzyVariables(!printFuzzyVariables ? "" : ctx.getSessionVariable().printFuzzyVariables())
                 .setCluster(DorisFE.CLUSTER)
-                .setLogId(ctx.getSessionVariable().getLogId());
+                .setLogId(logId);
 
         // construct TOS profile url
         // we maybe fail to get TOS profile url because of sending failed.
