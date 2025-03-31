@@ -722,6 +722,16 @@ public class HMSExternalTable extends ExternalTable implements MTMVRelatedTableI
                 .collect(Collectors.toSet());
     }
 
+    public List<String> getDistributionColumnList() {
+        return getRemoteTable().getSd().getBucketCols().stream().map(String::toLowerCase)
+            .collect(Collectors.toList());
+    }
+
+    public int getBucketNum() {
+        return Integer.parseInt(
+            getRemoteTable().getParameters().getOrDefault("spark.sql.sources.schema.numBuckets", "0"));
+    }
+
     @Override
     public PartitionType getPartitionType() {
         return getPartitionColumns().size() > 0 ? PartitionType.LIST : PartitionType.UNPARTITIONED;
