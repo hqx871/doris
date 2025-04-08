@@ -1122,6 +1122,10 @@ DEFINE_mInt32(mow_publish_max_discontinuous_version_num, "20");
 // The secure path with user files, used in the `local` table function.
 DEFINE_mString(user_files_secure_path, "${DORIS_HOME}");
 
+// ignore complex type check in broker load  
+DEFINE_mBool(ignore_load_complex_type_check, "true");
+
+
 DEFINE_Int32(partition_topn_partition_threshold, "1024");
 
 DEFINE_Int32(fe_expire_duration_seconds, "60");
