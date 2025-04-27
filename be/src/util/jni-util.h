@@ -64,6 +64,8 @@ public:
         return Status::OK();
     }
 
+    static Status HeapDump(const std::string& path);
+
     static Status GetGlobalClassRef(JNIEnv* env, const char* class_str,
                                     jclass* class_ref) WARN_UNUSED_RESULT;
 
@@ -88,6 +90,9 @@ public:
 private:
     static Status GetJNIEnvSlowPath(JNIEnv** env);
     static Status init_jni_scanner_loader(JNIEnv* env);
+    static Status load_class(JNIEnv* env, const char* name, jclass* clazz);
+    static Status load_method(JNIEnv* env, jclass& clazz, jmethodID* method, const char* name,
+                              const char* sig);
 
     static bool jvm_inited_;
     static jclass internal_exc_cl_;
@@ -103,6 +108,20 @@ private:
     static jmethodID jni_scanner_loader_method_;
     // Thread-local cache of the JNIEnv for this thread.
     static __thread JNIEnv* tls_env_;
+
+    static jclass jclass_hashmap_;
+    static jclass jclass_hashmap_entry_;
+    static jclass jclass_set_;
+    static jclass jclass_iterator_;
+
+    static jmethodID jmethod_hashmap_init_;
+    static jmethodID jmethod_hashmap_put_;
+    static jmethodID jmethod_hashmap_entry_set_;
+    static jmethodID jmethod_set_iterator_;
+    static jmethodID jmethod_iterator_has_next_;
+    static jmethodID jmethod_iterator_next_;
+    static jmethodID jmethod_hashmap_entry_key_;
+    static jmethodID jmethod_hashmap_entry_value_;
 };
 
 /// Helper class for lifetime management of chars from JNI, releasing JNI chars when

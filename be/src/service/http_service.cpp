@@ -41,6 +41,7 @@
 #include "http/action/health_action.h"
 #include "http/action/http_stream.h"
 #include "http/action/jeprofile_actions.h"
+#include "http/action/jvm_dump_action.h"
 #include "http/action/load_stream_action.h"
 #include "http/action/meta_action.h"
 #include "http/action/metrics_action.h"
@@ -222,6 +223,7 @@ Status HttpService::start() {
 
     // register jeprof actions
     static_cast<void>(JeprofileActions::setup(_env, _ev_http_server.get(), _pool));
+    static_cast<void>(JvmAction::setup(_env, _ev_http_server.get(), _pool));
 
     // register metrics
     {
