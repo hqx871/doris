@@ -89,6 +89,10 @@ public class InternalSchema {
         AUDIT_SCHEMA.add(new ColumnDef("peak_memory_bytes", TypeDef.create(PrimitiveType.BIGINT), true));
         AUDIT_SCHEMA.add(new ColumnDef("workload_group", TypeDef.create(PrimitiveType.STRING), true));
         AUDIT_SCHEMA.add(new ColumnDef("stmt", TypeDef.create(PrimitiveType.STRING), true));
+        AUDIT_SCHEMA.add(new ColumnDef("shuffle_send_bytes", TypeDef.create(PrimitiveType.BIGINT), true));
+        AUDIT_SCHEMA.add(new ColumnDef("shuffle_send_rows", TypeDef.create(PrimitiveType.BIGINT), true));
+        AUDIT_SCHEMA.add(new ColumnDef("log_id", TypeDef.create(PrimitiveType.STRING), true));
+        AUDIT_SCHEMA.add(new ColumnDef("profile", TypeDef.create(PrimitiveType.STRING), true));
     }
 
     // Get copied schema for statistic table
