@@ -27,6 +27,7 @@ import org.apache.doris.datasource.CatalogIf;
 import org.apache.doris.mysql.privilege.AccessControllerManager;
 import org.apache.doris.mysql.privilege.PrivPredicate;
 import org.apache.doris.qe.ConnectContext;
+import org.apache.doris.service.GeminiService;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -60,12 +61,17 @@ public class UserAuthentication {
         String ctlName = catalog.getName();
         AccessControllerManager accessManager = connectContext.getEnv().getAccessManager();
         UserIdentity userIdentity = connectContext.getCurrentUserIdentity();
+
         if (CollectionUtils.isEmpty(columns)) {
             if (!accessManager.checkTblPriv(userIdentity, ctlName, dbName, tableName, PrivPredicate.SELECT)) {
                 ErrorReport.reportAnalysisException(ErrorCode.ERR_TABLE_ACCESS_DENIED_ERROR,
                         PrivPredicate.SELECT.getPrivs().toString(), tableName);
             }
         } else {
+            if (catalog.getType().equals(GeminiService.BYTE_HIVE_CATALOG_NAME)
+                    || catalog.getType().equals(GeminiService.BYTE_PAIMON_CATALOG_NAME)) {
+                userIdentity.setByteUserName(connectContext.getByteUserName());
+            }
             accessManager.checkColumnsPriv(userIdentity, ctlName, dbName, tableName, columns, PrivPredicate.SELECT);
         }
     }

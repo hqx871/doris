@@ -63,12 +63,6 @@ under the License.
             <groupId>org.apache.paimon</groupId>
             <artifactId>paimon-format</artifactId>
             <version>${paimon.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -76,7 +70,6 @@ under the License.
             <artifactId>hive-catalog-shade</artifactId>
             <version>${doris.hive.catalog.shade.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>

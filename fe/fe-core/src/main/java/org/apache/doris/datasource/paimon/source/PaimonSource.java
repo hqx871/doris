@@ -64,6 +64,6 @@ public class PaimonSource {
     }
 
     public String getFileFormat() {
-        return originTable.options().getOrDefault(PaimonProperties.FILE_FORMAT, "orc");
+        return originTable.options().getOrDefault(PaimonProperties.FILE_FORMAT, "parquet");
     }
 }
