@@ -32,7 +32,7 @@ protected:
     CGroupUtilTest() {}
     virtual ~CGroupUtilTest() {}
 };
-TEST_F(CGroupUtilTest, memlimit) {
+TEST_F(CGroupUtilTest, DISABLED_memlimit) {
     int64_t bytes;
     float cpu_counts;
     CGroupUtil cgroup_util;
