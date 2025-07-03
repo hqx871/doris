@@ -3037,4 +3037,9 @@ suite("nereids_agg_fn") {
     qt_sql_array_agg_not_nullable '''
 		select id,array_agg(kint) from fn_test_not_nullable group by id order by id'''
 
+	qt_sql_map_sum '''
+    	select id,map_sum(km_str_tint) from fn_test group by id order by id'''
+    qt_sql_map_sum_total '''
+        select map_sum(km_str_tint) from fn_test'''
+
 }
