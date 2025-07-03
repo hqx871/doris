@@ -35,4 +35,9 @@ void register_aggregate_function_sum0(AggregateFunctionSimpleFactory& factory) {
     factory.register_function_both("sum0", creator_with_type::creator<AggregateFunctionSumSimple>);
 }
 
+void register_aggregate_function_map_sum(AggregateFunctionSimpleFactory& factory) {
+    factory.register_function_both("map_sum",
+                                   creator_without_type::creator<AggregateFunctionMapSum<AggregateFunctionMapSumData>>);
+}
+
 } // namespace doris::vectorized

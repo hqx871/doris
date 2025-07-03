@@ -28,12 +28,15 @@
 
 #include "vec/aggregate_functions/aggregate_function.h"
 #include "vec/columns/column.h"
+#include "vec/columns/column_map.h"
 #include "vec/common/assert_cast.h"
 #include "vec/core/field.h"
 #include "vec/core/types.h"
 #include "vec/data_types/data_type.h"
 #include "vec/data_types/data_type_decimal.h"
+#include "vec/data_types/data_type_string.h"
 #include "vec/data_types/data_type_fixed_length_object.h"
+#include "vec/data_types/data_type_map.h"
 #include "vec/io/io_helper.h"
 
 namespace doris {
@@ -70,6 +73,87 @@ struct AggregateFunctionSumData {
     void read(BufferReadable& buf) { read_binary(sum, buf); }
 
     T get() const { return sum; }
+};
+
+struct AggregateFunctionMapSumData {
+    using Map = phmap::flat_hash_map<StringRef, int64_t>;
+    Map _map {};
+
+    AggregateFunctionMapSumData() = default;
+    AggregateFunctionMapSumData(const DataTypes& argument_types) {}
+
+    void add(StringRef key, int64_t value) {
+        DCHECK(key.data != nullptr);
+        if (_map.find(key) != _map.end()) {
+            _map[key] = _map[key] + value;
+        } else {
+            _map.emplace(key, value);
+        }
+    }
+
+    void add(const Field& key_, const Field& value) {
+        DCHECK(!key_.is_null());
+        auto key_array = vectorized::get<Array>(key_);
+        auto value_array = vectorized::get<Array>(value);
+
+        const auto count = key_array.size();
+        DCHECK_EQ(count, value_array.size());
+
+        for (size_t i = 0; i != count; ++i) {
+            StringRef key;
+            auto& string = key_array[i].get<String>();
+            key.data = string.data();
+            key.size = string.size();
+
+            if (_map.find(key) != _map.end()) {
+                _map[key] = _map[key] + value_array[i].get<int64_t>();
+            } else {
+                key.data = _arena.insert(key.data, key.size);
+                _map.emplace(key, value_array[i].get<int64_t>());
+            }
+        }
+    }
+
+    void merge(const AggregateFunctionMapSumData& rhs) {
+        const size_t num_rows = rhs._map.size();
+        if (num_rows <= 0) {
+            return;
+        }
+
+        for (const auto& pair : rhs._map) {
+            add(pair.first, pair.second);
+        }
+    }
+
+    void write(BufferWritable& buf) const {
+        const size_t size = _map.size();
+        write_binary(size, buf);
+        for (const auto& pair : _map) {
+            write_binary(pair.first, buf);
+            write_binary(pair.second, buf);
+        }
+    }
+
+    void read(BufferReadable& buf) {
+        size_t size = 0;
+        read_binary(size, buf);
+        StringRef key;
+        int64_t value;
+        for (size_t i = 0; i < size; i++) {
+            read_binary(key, buf);
+            read_binary(value, buf);
+            add(key, value);
+        }
+    }
+
+    void reset() {
+        _map = {};
+    }
+
+    Map get() const { return _map; }
+
+private:
+    Arena _arena;
 };
 
 /// Counts the sum of the numbers.
@@ -220,6 +304,68 @@ private:
     UInt32 scale;
 };
 
+/// Counts the sum of the numbers.
+template <typename Data>
+class AggregateFunctionMapSum final
+        : public IAggregateFunctionDataHelper<Data, AggregateFunctionMapSum<Data>> {
+public:
+
+    String get_name() const override { return "map_sum"; }
+
+    AggregateFunctionMapSum(const DataTypes& argument_types_)
+            : IAggregateFunctionDataHelper<Data, AggregateFunctionMapSum<Data>>(
+                      argument_types_) {}
+
+    DataTypePtr get_return_type() const override {
+        /// keys and values column of `ColumnMap` are always nullable.
+        return std::make_shared<DataTypeMap>(make_nullable(std::make_shared<DataTypeString>()),
+                                             make_nullable(std::make_shared<DataTypeInt64>()));
+    }
+
+    void add(AggregateDataPtr __restrict place, const IColumn** columns, ssize_t row_num,
+             Arena*) const override {
+        auto& col = assert_cast<const ColumnMap&>(*columns[0]);
+        auto map = doris::vectorized::get<Map>(col[row_num]);
+        this->data(place).add(map[0], map[1]);
+    }
+
+    void reset(AggregateDataPtr place) const override { this->data(place).reset(); }
+
+    void merge(AggregateDataPtr __restrict place, ConstAggregateDataPtr rhs,
+               Arena*) const override {
+        this->data(place).merge(this->data(rhs));
+    }
+
+    void serialize(ConstAggregateDataPtr __restrict place, BufferWritable& buf) const override {
+        this->data(place).write(buf);
+    }
+
+    void deserialize(AggregateDataPtr __restrict place, BufferReadable& buf,
+                     Arena*) const override {
+        this->data(place).read(buf);
+    }
+
+    void insert_result_into(ConstAggregateDataPtr __restrict place, IColumn& to) const override {
+        auto& dst = assert_cast<ColumnMap&>(to);
+        size_t num_rows = this->data(place).get().size();
+        auto& offsets = dst.get_offsets();
+        auto& dst_key_column = assert_cast<ColumnNullable&>(dst.get_keys());
+        dst_key_column.get_null_map_data().resize_fill(dst_key_column.get_null_map_data().size() +
+                                                       num_rows, 0);
+
+        for (const auto& pair : this->data(place).get()) {
+            dst_key_column.get_nested_column().insert_data(pair.first.data, pair.first.size);
+            dst.get_values().insert(pair.second);
+        }
+
+        if (offsets.empty()) {
+            offsets.push_back(num_rows);
+        } else {
+            offsets.push_back(offsets.back() + num_rows);
+        }
+    }
+};
+
 template <typename T, bool level_up>
 struct SumSimple {
     /// @note It uses slow Decimal128 (cause we need such a variant). sumWithOverflow is faster for Decimal32/64
@@ -230,6 +376,12 @@ struct SumSimple {
 
 template <typename T>
 using AggregateFunctionSumSimple = typename SumSimple<T, true>::Function;
+
+struct MapSumSimple {
+    using Function = AggregateFunctionMapSum<AggregateFunctionMapSumData>;
+};
+
+using AggregateFunctionMapSumSimple = typename MapSumSimple::Function;
 
 const static std::string DECIMAL256_SUFFIX {"_decimal256"};
 template <typename T, bool level_up>
