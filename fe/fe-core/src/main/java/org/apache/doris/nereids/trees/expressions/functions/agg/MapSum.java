@@ -17,8 +17,6 @@
 
 package org.apache.doris.nereids.trees.expressions.functions.agg;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import org.apache.doris.catalog.FunctionSignature;
 import org.apache.doris.nereids.trees.expressions.Expression;
 import org.apache.doris.nereids.trees.expressions.functions.AlwaysNotNullable;
@@ -28,6 +26,9 @@ import org.apache.doris.nereids.types.MapType;
 import org.apache.doris.nereids.types.StringType;
 import org.apache.doris.nereids.types.coercion.FollowToArgumentType;
 import org.apache.doris.nereids.types.coercion.NumericType;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 
