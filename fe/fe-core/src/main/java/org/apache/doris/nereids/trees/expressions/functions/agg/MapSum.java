@@ -54,7 +54,7 @@ public class MapSum extends AggregateFunction
      * constructor with 2 arguments.
      */
     private MapSum(boolean distinct, Expression arg0) {
-        super("map_agg", distinct, arg0);
+        super("map_sum", distinct, arg0);
     }
 
     /**
