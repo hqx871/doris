@@ -40,7 +40,7 @@ public class MapSum extends AggregateFunction
 
     public static final List<FunctionSignature> SIGNATURES = ImmutableList.of(
             FunctionSignature.ret(new FollowToArgumentType(0))
-                .args(MapType.of(StringType.INSTANCE, new NumericType()))
+                .args(MapType.of(StringType.INSTANCE, NumericType.INSTANCE))
     );
 
     /**FunctionSignature
