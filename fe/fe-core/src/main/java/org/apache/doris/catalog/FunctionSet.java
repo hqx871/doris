@@ -811,7 +811,7 @@ public class FunctionSet<T> {
                         "",
                         true, false, true, true));
         addBuiltin(AggregateFunction.createBuiltin("map_sum",
-                        Lists.newArrayList(Type.Map), Type.Map, Type.Map,
+                        Lists.newArrayList(Type.MAP), Type.MAP, Type.MAP,
                         "",
                         "",
                         "",
