@@ -810,6 +810,14 @@ public class FunctionSet<T> {
                         "",
                         "",
                         true, false, true, true));
+        addBuiltin(AggregateFunction.createBuiltin("map_sum",
+                        Lists.newArrayList(Type.Map), Type.Map, Type.Map,
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        true, false, true, true));
 
         for (Type t : Type.getTrivialTypes()) {
             if (t.isNull()) {
