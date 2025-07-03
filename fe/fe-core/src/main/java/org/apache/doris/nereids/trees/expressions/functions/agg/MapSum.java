@@ -22,10 +22,10 @@ import org.apache.doris.nereids.trees.expressions.Expression;
 import org.apache.doris.nereids.trees.expressions.functions.AlwaysNotNullable;
 import org.apache.doris.nereids.trees.expressions.functions.ExplicitlyCastableSignature;
 import org.apache.doris.nereids.trees.expressions.shape.UnaryExpression;
+import org.apache.doris.nereids.types.BigIntType;
 import org.apache.doris.nereids.types.MapType;
 import org.apache.doris.nereids.types.StringType;
 import org.apache.doris.nereids.types.coercion.FollowToArgumentType;
-import org.apache.doris.nereids.types.coercion.NumericType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -40,7 +40,7 @@ public class MapSum extends AggregateFunction
 
     public static final List<FunctionSignature> SIGNATURES = ImmutableList.of(
             FunctionSignature.ret(new FollowToArgumentType(0))
-                .args(MapType.of(StringType.INSTANCE, NumericType.INSTANCE))
+                .args(MapType.of(StringType.INSTANCE, BigIntType.INSTANCE))
     );
 
     /**FunctionSignature
