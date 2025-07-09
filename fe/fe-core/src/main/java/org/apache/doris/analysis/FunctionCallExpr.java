@@ -1697,7 +1697,7 @@ public class FunctionCallExpr extends Expr {
                     // when we call count<Array<T>> with nested type is not null type which is defined in FunctionSet
                     // so here aim to make function signature to match builtln func we defined in fe code
                     if ((fnName.getFunction().equalsIgnoreCase("count")
-                        || fnName.getFunction().equalsIgnoreCase("map_sum")) && childTypes.length > 0
+                            || fnName.getFunction().equalsIgnoreCase("map_sum")) && childTypes.length > 0
                             && childTypes[0].isComplexType()) {
                         // get origin type to match builtln func
                         Type[] matchFuncChildTypes = new Type[1];
