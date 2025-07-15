@@ -38,7 +38,7 @@ public class CollectArray extends AggregateFunction
 
     public static final List<FunctionSignature> SIGNATURES = ImmutableList.of(
             FunctionSignature.ret(ArrayType.of(new FollowToAnyDataType(0)))
-            .args(ArrayType.of(new AnyDataType(0))
+            .args(ArrayType.of(new AnyDataType(0)))
     );
 
     /**
