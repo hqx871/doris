@@ -26,7 +26,6 @@ void register_aggregate_function_array(AggregateFunctionSimpleFactory& factory,
                                                      const std::string& nested_name) {
     auto creator = [&factory, nested_name](const std::string& name,
                                             const DataTypes& argument_types,
-                                            const Array& parameters,
                                             const bool result_is_nullable) -> AggregateFunctionPtr {
         DataTypes nested_argument_types;
         nested_argument_types.reserve(argument_types.size());
@@ -39,13 +38,13 @@ void register_aggregate_function_array(AggregateFunctionSimpleFactory& factory,
             }
         }
         AggregateFunctionPtr nested_func =
-                factory.get(nested_name, nested_argument_types, parameters, result_is_nullable);
+                factory.get(nested_name, nested_argument_types, result_is_nullable);
         if (nested_func == nullptr) {
             LOG(WARNING) << "Cannot find nested aggregate function " << nested_name;
             return nullptr;
         }
         return AggregateFunctionPtr(
-                new AggregateFunctionArray(name, nested_func, argument_types, parameters));
+                new AggregateFunctionArray(name, nested_func, argument_types));
     };
     factory.register_function(name, creator);
 }

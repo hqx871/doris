@@ -112,7 +112,6 @@ public class AliasFunction extends Function {
             throws AnalysisException {
         List<Function> oriFuncs = new ArrayList<>();
         oriFuncs.addAll(functionSet.getVectorizedFunctions(target));
-        oriFuncs.addAll(functionSet.getFunctions(target));
         for (Function oriFunc : oriFuncs) {
             ArrayList<Type> args = new ArrayList<>(Arrays.asList(oriFunc.getArgs()));
             List<String> parameters = new ArrayList<>();
@@ -122,7 +121,7 @@ public class AliasFunction extends Function {
             String oriStmt = String.format("select %s(%s);", target, Joiner.on(",").join(parameters));
             functionSet.addBuiltin(
                     createBuiltin(alias, args, oriFunc.getReturnType(), oriFunc.hasVarArgs(), parameters,
-                            getExpr(oriStmt), oriFunc.isUserVisible(), oriFunc.isVectorized()));
+                            getExpr(oriStmt), oriFunc.isUserVisible(), true));
         }
     }
 

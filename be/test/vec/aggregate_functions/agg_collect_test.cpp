@@ -172,9 +172,8 @@ public:
         vectorized::DataTypePtr array_type(std::make_shared<vectorized::DataTypeArray>(nested_type));
         DataTypes data_types = {(DataTypePtr)array_type};
         LOG(INFO) << "test " << fn_name << "(" << data_types[0]->get_name() << ")";
-        Array array;
         AggregateFunctionSimpleFactory factory = AggregateFunctionSimpleFactory::instance();
-        auto agg_function = factory.get(fn_name, data_types, array);
+        auto agg_function = factory.get(fn_name, data_types);
         EXPECT_NE(agg_function, nullptr);
 
         std::unique_ptr<char[]> memory(new char[agg_function->size_of_data()]);
@@ -245,7 +244,7 @@ TEST_F(VAggCollectTest, test_array_empty) {
     test_agg_collect_array_set<DataTypeInt64>();
     test_agg_collect_array_set<DataTypeInt128>();
 
-    test_agg_collect_array_set<DataTypeDecimal<Decimal128>>();
+    test_agg_collect_array_set<DataTypeDecimal<Decimal128V2>>();
     test_agg_collect_array_set<DataTypeDate>();
     test_agg_collect_array_set<DataTypeString>();
 }
@@ -272,7 +271,7 @@ TEST_F(VAggCollectTest, test_array_with_data) {
     test_agg_collect_array_set<DataTypeInt128>(20);
     test_agg_collect_array_set<DataTypeInt128>(30);
 
-    test_agg_collect_array_set<DataTypeDecimal<Decimal128>>(10);
+    test_agg_collect_array_set<DataTypeDecimal<Decimal128V2>>(10);
     test_agg_collect_array_set<DataTypeDateTime>(5);
     test_agg_collect_array_set<DataTypeString>(10);
 }

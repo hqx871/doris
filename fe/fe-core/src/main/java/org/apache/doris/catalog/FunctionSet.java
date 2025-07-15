@@ -1931,10 +1931,6 @@ public class FunctionSet<T> {
         return vectorizedFunctions.getOrDefault(name, Collections.emptyList());
     }
 
-    public List<Function> getFunctions(String name) {
-        return functions.getOrDefault(name, Collections.emptyList());
-    }
-
     public List<Function> getBulitinFunctions() {
         List<Function> builtinFunctions = Lists.newArrayList();
         for (Map.Entry<String, List<Function>> entry : vectorizedFunctions.entrySet()) {

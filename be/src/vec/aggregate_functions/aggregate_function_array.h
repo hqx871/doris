@@ -38,8 +38,8 @@ private:
 
 public:
     AggregateFunctionArray(const String& name_, AggregateFunctionPtr nested_,
-                           const DataTypes& arguments, const Array& params_)
-            : IAggregateFunctionHelper<AggregateFunctionArray>(arguments, params_),
+                           const DataTypes& arguments)
+            : IAggregateFunctionHelper<AggregateFunctionArray>(arguments),
               name(name_),
               nested_func(nested_),
               num_arguments(arguments.size()) {}
@@ -61,9 +61,9 @@ public:
     /// NOTE: Currently not used (structures with aggregation state are put without alignment).
     size_t align_of_data() const override { return nested_func->align_of_data(); }
 
-    void deserialize_and_merge(AggregateDataPtr __restrict place, BufferReadable& buf,
+    void deserialize_and_merge(AggregateDataPtr __restrict place, AggregateDataPtr __restrict rhs, BufferReadable& buf,
                                Arena* arena) const override {
-        nested_func->deserialize_and_merge(place, buf, arena);
+        nested_func->deserialize_and_merge(place, rhs, buf, arena);
     }
 
     void deserialize_and_merge_from_column(AggregateDataPtr __restrict place, const IColumn& column,
@@ -71,7 +71,7 @@ public:
         nested_func->deserialize_and_merge_from_column(place, column, arena);
     }
 
-    void add(AggregateDataPtr __restrict place, const IColumn** columns, size_t row_num,
+    void add(AggregateDataPtr __restrict place, const IColumn** columns, ssize_t row_num,
              Arena* arena) const override {
         const IColumn* nested[num_arguments];
 
