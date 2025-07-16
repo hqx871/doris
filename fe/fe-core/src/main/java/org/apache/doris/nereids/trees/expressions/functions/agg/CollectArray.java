@@ -38,7 +38,7 @@ public class CollectArray extends AggregateFunction
         implements UnaryExpression, ExplicitlyCastableSignature, AlwaysNotNullable {
 
     public static final List<FunctionSignature> SIGNATURES = ImmutableList.of(
-            FunctionSignature.ret(ArrayType.of(new FollowToAnyDataType(0)))
+            FunctionSignature.ret(new FollowToArgumentType(0))
             .args(ArrayType.of(new AnyDataType(0)))
     );
 
@@ -72,7 +72,7 @@ public class CollectArray extends AggregateFunction
 
     @Override
     public FunctionSignature computeSignature(FunctionSignature signature) {
-        signature = signature.withReturnType(ArrayType.of(getArgumentType(0)));
+        signature = signature.withReturnType(getArgumentType(0));
         return super.computeSignature(signature);
     }
 

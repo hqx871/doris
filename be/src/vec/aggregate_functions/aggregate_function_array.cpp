@@ -46,7 +46,7 @@ void register_aggregate_function_array(AggregateFunctionSimpleFactory& factory,
         return AggregateFunctionPtr(
                 new AggregateFunctionArray(name, nested_func, argument_types));
     };
-    factory.register_function(name, creator);
+    factory.register_function_both(name, creator);
 }
 
 } // namespace doris::vectorized
