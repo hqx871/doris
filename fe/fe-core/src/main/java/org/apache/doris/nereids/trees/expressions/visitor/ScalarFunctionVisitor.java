@@ -413,6 +413,7 @@ import org.apache.doris.nereids.trees.expressions.functions.scalar.ToIpv6OrDefau
 import org.apache.doris.nereids.trees.expressions.functions.scalar.ToIpv6OrNull;
 import org.apache.doris.nereids.trees.expressions.functions.scalar.ToMonday;
 import org.apache.doris.nereids.trees.expressions.functions.scalar.ToQuantileState;
+import org.apache.doris.nereids.trees.expressions.functions.scalar.ToString;
 import org.apache.doris.nereids.trees.expressions.functions.scalar.Tokenize;
 import org.apache.doris.nereids.trees.expressions.functions.scalar.Trim;
 import org.apache.doris.nereids.trees.expressions.functions.scalar.Truncate;
@@ -1982,6 +1983,10 @@ public interface ScalarFunctionVisitor<R, C> {
 
     default R visitToDays(ToDays toDays, C context) {
         return visitScalarFunction(toDays, context);
+    }
+
+    default R visitToString(ToString toString, C context) {
+        return visitScalarFunction(toString, context);
     }
 
     default R visitToMonday(ToMonday toMonday, C context) {
