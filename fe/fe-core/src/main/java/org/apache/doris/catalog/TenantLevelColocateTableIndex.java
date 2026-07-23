@@ -584,10 +584,10 @@ public class TenantLevelColocateTableIndex implements Writable {
         }
     }
 
-    public void checkDistributionAndReplica(Long tableId, DistributionInfo distributionInfo,
-            ReplicaAllocation replicaAlloc) throws DdlException {
-        checkMasterDistributionAndReplica(tableId, distributionInfo, replicaAlloc);
-        checkSlaveDistributionAndReplica(tableId, distributionInfo, replicaAlloc);
+    public void checkPartitionDistributionAndReplica(Long tableId, int defaultBucketNum,
+            DistributionInfo partitionDistributionInfo, ReplicaAllocation replicaAlloc) throws DdlException {
+        checkMasterDistributionAndReplica(tableId, partitionDistributionInfo, replicaAlloc);
+        checkSlaveDistributionAndReplica(tableId, defaultBucketNum, partitionDistributionInfo, replicaAlloc);
     }
 
     private void checkMasterDistributionAndReplica(Long tableId, DistributionInfo distributionInfo,
@@ -966,13 +966,13 @@ public class TenantLevelColocateTableIndex implements Writable {
         return result;
     }
 
-    private void checkSlaveDistributionAndReplica(Long tableId, DistributionInfo distributionInfo,
-            ReplicaAllocation replicaAlloc) throws DdlException {
+    private void checkSlaveDistributionAndReplica(Long tableId, int defaultBucketNum,
+            DistributionInfo distributionInfo, ReplicaAllocation replicaAlloc) throws DdlException {
         Map<Tag, TenantLevelColocateGroupSchema> map = getSlaveGroupByTable(tableId);
         for (Entry<Tag, TenantLevelColocateGroupSchema> entry : map.entrySet()) {
             TenantLevelColocateGroupSchema groupSchema = entry.getValue();
             Preconditions.checkNotNull(groupSchema);
-            groupSchema.checkSlaveDistribution(distributionInfo);
+            groupSchema.checkSlaveDistribution(defaultBucketNum, distributionInfo);
             groupSchema.checkReplicaAllocation(replicaAlloc);
         }
     }
